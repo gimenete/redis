@@ -82,4 +82,8 @@ rocksdb: .make-prerequisites
 	@printf '%b %b\n' $(MAKECOLOR)MAKE$(ENDCOLOR) $(BINCOLOR)$@$(ENDCOLOR)
 	cd rocksdb && $(MAKE)
 
+bridge: .make-prerequisites
+	@printf '%b %b\n' $(MAKECOLOR)MAKE$(ENDCOLOR) $(BINCOLOR)$@$(ENDCOLOR)
+	cd bridge && $(MAKE)
+
 .PHONY: rocksdb
