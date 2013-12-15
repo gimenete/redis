@@ -30,6 +30,7 @@
 #include "redis.h"
 #include "slowlog.h"
 #include "bio.h"
+#include "bridge.h"
 
 #include <time.h>
 #include <signal.h>
@@ -2933,6 +2934,7 @@ void redisSetProcTitle(char *title) {
 }
 
 int main(int argc, char **argv) {
+    helloWorld();
     struct timeval tv;
 
     /* We need to initialize our libraries, and the server configuration. */
