@@ -258,7 +258,14 @@ struct redisCommand redisCommandTable[] = {
     {"script",scriptCommand,-2,"ras",0,NULL,0,0,0,0,0},
     {"time",timeCommand,1,"rR",0,NULL,0,0,0,0,0},
     {"bitop",bitopCommand,-4,"wm",0,NULL,2,-1,1,0,0},
-    {"bitcount",bitcountCommand,-2,"r",0,NULL,1,1,1,0,0}
+    {"bitcount",bitcountCommand,-2,"r",0,NULL,1,1,1,0,0},
+
+    // "ddb" = disk database
+    {"ddbopen",bridgeOpenCommand,1,"r",0,NULL,0,0,0,0,0},
+    {"ddbget",bridgeGetCommand,2,"r",0,NULL,0,0,0,0,0},
+    {"ddbset",bridgeSetCommand,3,"r",0,NULL,0,0,0,0,0}
+    // {"ddbdel",bridgeDelCommand,1,"r",0,NULL,0,0,0,0,0},
+    // {"ddbclose",bridgeCloseCommand,0,"r",0,NULL,0,0,0,0,0},
 };
 
 /*============================ Utility functions ============================ */
@@ -2934,7 +2941,7 @@ void redisSetProcTitle(char *title) {
 }
 
 int main(int argc, char **argv) {
-    helloWorld();
+    bridgeOpen();
     struct timeval tv;
 
     /* We need to initialize our libraries, and the server configuration. */
@@ -3037,5 +3044,32 @@ int main(int argc, char **argv) {
     aeDeleteEventLoop(server.el);
     return 0;
 }
+
+void bridgeOpenCommand(redisClient *c) {
+
+}
+
+void bridgeGetCommand(redisClient *c) {
+    char* value = bridgeGet(c->argv[1]->ptr);
+    if (value == NULL) {
+        addReplyLongLong(c, 0);
+    } else {
+        addReplyBulkCBuffer(c, value, strlen(value));
+    }
+}
+
+void bridgeSetCommand(redisClient *c) {
+    int result = bridgeSet(c->argv[1]->ptr, c->argv[2]->ptr);
+    addReplyLongLong(c, result);
+}
+
+void bridgeDelCommand(redisClient *c) {
+
+}
+
+void bridgeCloseCommand(redisClient *c) {
+
+}
+
 
 /* The End */
