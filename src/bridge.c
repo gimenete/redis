@@ -1,6 +1,7 @@
 #include "rocksdb/c.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 rocksdb_t *db;
 
@@ -16,14 +17,9 @@ void bridgeOpen() {
       fprintf(stderr, "Open fail.\n");
       return;
     }
-
-    /* reset error var */
-    // rocksdb_free(err); err = NULL;
-    printf("Rocksdb database opened!!!!!\n");
 }
 
 int bridgeSet(const char* key, const char* val) {
-    printf("Rocksdb set %s -> %s\n", key, val);
     char *err = NULL;
     rocksdb_writeoptions_t *woptions = rocksdb_writeoptions_create();
     rocksdb_put(db, woptions, key, strlen(key), val, strlen(val), &err);
@@ -34,7 +30,6 @@ int bridgeSet(const char* key, const char* val) {
 }
 
 char* bridgeGet(const char* key) {
-    printf("Rocksdb get %s\n", key);
     char *err = NULL;
     char *read;
     size_t read_len;
@@ -46,8 +41,11 @@ char* bridgeGet(const char* key) {
       return NULL;
     }
 
-    printf("key: %s\n", read);
-    return read;
+    char *value = malloc(sizeof(char)*(read_len+1));
+    strncpy(value, read, read_len);
+    value[read_len-1] = '\0';
+
+    return value;
 }
 
 void bridgeDel() {
