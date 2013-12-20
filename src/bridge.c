@@ -19,33 +19,26 @@ void bridgeOpen() {
     }
 }
 
-int bridgeSet(const char* key, const char* val) {
+int bridgeSet(const char* key, size_t keylen, const char* val, size_t vallen) {
     char *err = NULL;
     rocksdb_writeoptions_t *woptions = rocksdb_writeoptions_create();
-    rocksdb_put(db, woptions, key, strlen(key), val, strlen(val), &err);
+    rocksdb_put(db, woptions, key, keylen, val, vallen, &err);
     if (err != NULL) {
         return 0;
     }
     return 1;
 }
 
-char* bridgeGet(const char* key) {
+const char* bridgeGet(const char* key, size_t keylen, size_t* read_len) {
     char *err = NULL;
-    char *read;
-    size_t read_len;
     rocksdb_readoptions_t *roptions = rocksdb_readoptions_create();
-    read = rocksdb_get(db, roptions, key, strlen(key), &read_len, &err);
+    const char *read = rocksdb_get(db, roptions, key, keylen, read_len, &err);
 
     if (err != NULL) {
-      fprintf(stderr, "Read fail.\n");
       return NULL;
     }
 
-    char *value = malloc(sizeof(char)*(read_len+1));
-    strncpy(value, read, read_len);
-    value[read_len-1] = '\0';
-
-    return value;
+    return read;
 }
 
 void bridgeDel() {

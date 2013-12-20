@@ -3050,16 +3050,20 @@ void bridgeOpenCommand(redisClient *c) {
 }
 
 void bridgeGetCommand(redisClient *c) {
-    char* value = bridgeGet(c->argv[1]->ptr);
+    char *key = c->argv[1]->ptr;
+    size_t valuelen;
+    char *value = bridgeGet(key, strlen(key), &valuelen);
     if (value == NULL) {
         addReplyLongLong(c, 0);
     } else {
-        addReplyBulkCBuffer(c, value, strlen(value));
+        addReplyBulkCBuffer(c, value, valuelen);
     }
 }
 
 void bridgeSetCommand(redisClient *c) {
-    int result = bridgeSet(c->argv[1]->ptr, c->argv[2]->ptr);
+    char *key = c->argv[1]->ptr;
+    char *val = c->argv[2]->ptr;
+    int result = bridgeSet(key, strlen(key), val, strlen(val));
     addReplyLongLong(c, result);
 }
 
