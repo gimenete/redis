@@ -29,10 +29,10 @@ int bridgeSet(const char* key, size_t keylen, const char* val, size_t vallen) {
     return 1;
 }
 
-const char* bridgeGet(const char* key, size_t keylen, size_t* read_len) {
+char* bridgeGet(const char* key, size_t keylen, size_t* read_len) {
     char *err = NULL;
     rocksdb_readoptions_t *roptions = rocksdb_readoptions_create();
-    const char *read = rocksdb_get(db, roptions, key, keylen, read_len, &err);
+    char *read = rocksdb_get(db, roptions, key, keylen, read_len, &err);
 
     if (err != NULL) {
       return NULL;

@@ -3054,7 +3054,7 @@ void bridgeGetCommand(redisClient *c) {
     size_t valuelen;
     char *value = bridgeGet(key, strlen(key), &valuelen);
     if (value == NULL) {
-        addReplyLongLong(c, 0);
+        addReply(c, shared.nullbulk);
     } else {
         addReplyBulkCBuffer(c, value, valuelen);
     }
