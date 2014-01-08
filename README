@@ -1,3 +1,70 @@
+What is this?
+-------------
+
+This is a **very experimental** redis fork. Redis is a blazing-fast in-memory database. Redis has had some some attempts to provide mechanisms to have datasets bigger than the available RAM but all have been discontinued. For example: [vm](http://redis.io/topics/virtual-memory) (virtual-memory) and [diskstore](https://groups.google.com/forum/#!topic/redis-db/jJJErYbVUY4). And of course letting the operating system [swap your dataset](http://antirez.com/news/52) is not a good idea.
+
+The intention of this fork is to provide a way to store things on disk rather on having everything in memory. We have chosen a disk-based key-value store that you can use with some additional commands
+
+    ddbopen // opens the disk-based database
+    ddbget key // gets a key
+    ddbset key value // sets the value of a key
+
+The chosen disk-based database is [RocksDB](http://rocksdb.org) from Facebook.
+
+**Why not using redis and rocks-db separately in the application layer?**
+
+We decided to make this fork that embeds the disk-based database because this way you can use the embedded database from LUA scripts.
+
+**One possible usage**
+
+For example if you have tons of small hashes and many of them are rarely read, but sometimes you will want to operate with them you can keep the "fresh" hashes in memory and keep the rarely used in the disk-based db.
+
+You could read a hash this way:
+
+    local ttl = 24*60*60*1000 // one day
+    local obj = redis.hgetall(key);
+    if obj == nil then // hash not in redis
+    	// check the disk-based database
+        local dump = redis.call("ddbget", key);
+        if dump != nil then
+            redis.restore(key, ttl, dump); // restore to redis with a ttl
+            obj = redis.hgetall(key);
+        else
+            // objet not found in the disk-based db
+        end
+    end
+
+You could store this way:
+
+    local ttl = 24*60*60*1000 // one day
+    // modify the hash in some way (hset, hincrby,...)
+    
+    local dump = redis.dump(key)
+    redis.call("ddbset", key, dump)
+    
+    // make the key expire. It is already backed up
+    // in the disk-based database
+    redis.call("pexpire", key)
+
+**Why rocks-db?**
+
+Becuase it has [great performance](https://github.com/facebook/rocksdb/wiki/Performance-Benchmarks). Nevertheless our intention is to be easy to change the underlaying disk-based database. So all the communication is done in a file called `bridge.c` that you could reimplement with another database engine. That's why the file is called *bridge*.
+
+**What about redis-nds?**
+
+[Redis nds](https://github.com/mpalmer/redis/tree/nds-2.6) is another fork of redis. The idea is similar but the implementation is very different. NDS does not add new commands. It instead implements a totally transparent mechanism. This is good for many things but you don't have total control over which keys are in memory or not. NDS is a more mature project and it's being used in production.
+
+**TODO**
+
+* Implement more commands: `ddbdel key`
+* Make the disk-database path configurable
+* Open and close the disk-database automatically
+* Integrate the disk-based db in the replication process
+
+---
+
+Here gores the original redis README
+
 Where to find complete Redis documentation?
 -------------------------------------------
 
